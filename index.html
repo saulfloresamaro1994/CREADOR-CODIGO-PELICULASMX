@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - PELICULASMX</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 100, 255, 0.3);
+        }
+        
+        h1 {
+            color: #0066ff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #aaa;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 16px;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: monospace;
+        }
+        
+        button {
+            background-color: #0066ff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #0055cc;
+        }
+        
+        .output {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #2d2d2d;
+            border-radius: 4px;
+            border-left: 4px solid #0066ff;
+        }
+        
+        .copy-btn {
+            background-color: #333;
+            margin-top: 10px;
+            padding: 8px 15px;
+            font-size: 14px;
+            width: auto;
+        }
+        
+        .success-message {
+            color: #4CAF50;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .instructions {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .instructions h3 {
+            color: #ff9800;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Panel de Control - Agregar Películas</h1>
+        
+        <div class="instructions">
+            <h3>Instrucciones:</h3>
+            <p>1. Completa todos los campos del formulario con los datos de la nueva película.</p>
+            <p>2. Haz clic en "Generar Código" para crear el objeto de película.</p>
+            <p>3. Copia el código generado y pégalo en el array de películas del archivo principal.</p>
+        </div>
+        
+        <form id="movieForm">
+            <div class="form-group">
+                <label for="movieTitle">Título de la Película:</label>
+                <input type="text" id="movieTitle" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="movieYear">Año de Lanzamiento:</label>
+                <input type="number" id="movieYear" min="1900" max="2100" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="videoUrl">URL del Video (Dropbox, Google Drive, etc.):</label>
+                <input type="url" id="videoUrl" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="movieCategory">Categoría:</label>
+                <select id="movieCategory" required>
+                    <option value="estrenos">Estrenos</option>
+                    <option value="populares">Recientes</option>
+                </select>
+            </div>
+            
+            <button type="button" id="generateBtn">Generar Código</button>
+        </form>
+        
+        <div class="success-message" id="successMessage">
+            ¡Código generado con éxito! Copia y pega en el archivo principal.
+        </div>
+        
+        <div class="output" id="output">
+            <p>El código generado aparecerá aquí...</p>
+        </div>
+        
+        <button class="copy-btn" id="copyBtn">Copiar Código</button>
+    </div>
+
+    <script>
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            const title = document.getElementById('movieTitle').value.trim();
+            const year = document.getElementById('movieYear').value;
+            const videoUrl = document.getElementById('videoUrl').value.trim();
+            const category = document.getElementById('movieCategory').value;
+            
+            if (!title || !year || !videoUrl) {
+                alert('Por favor completa todos los campos');
+                return;
+            }
+            
+            // Crear objeto de película
+            const movieObject = {
+                title: title,
+                year: parseInt(year),
+                videoUrl: videoUrl,
+                active: false,
+                category: category
+            };
+            
+            // Formatear como código JavaScript
+            const jsCode = `{
+    title: "${title}",
+    year: ${year},
+    videoUrl: "${videoUrl}",
+    active: false,
+    category: "${category}"
+}`;
+            
+            // Mostrar el código generado
+            document.getElementById('output').innerHTML = `<pre>${jsCode}</pre>`;
+            
+            // Mostrar mensaje de éxito
+            const successMessage = document.getElementById('successMessage');
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+            
+            // Guardar en localStorage (opcional)
+            saveToLocalStorage(movieObject);
+        });
+        
+        document.getElementById('copyBtn').addEventListener('click', function() {
+            const outputText = document.getElementById('output').textContent;
+            
+            navigator.clipboard.writeText(outputText).then(() => {
+                alert('Código copiado al portapapeles');
+            }).catch(err => {
+                console.error('Error al copiar:', err);
+                alert('Error al copiar el código');
+            });
+        });
+        
+        function saveToLocalStorage(movie) {
+            // Obtener películas existentes o crear un nuevo array
+            let movies = JSON.parse(localStorage.getItem('peliculasmx_movies')) || [];
+            
+            // Agregar la nueva película
+            movies.push(movie);
+            
+            // Guardar en localStorage
+            localStorage.setItem('peliculasmx_movies', JSON.stringify(movies));
+        }
+        
+        // Cargar datos guardados al iniciar (opcional)
+        window.addEventListener('load', function() {
+            const savedMovies = JSON.parse(localStorage.getItem('peliculasmx_movies'));
+            if (savedMovies && savedMovies.length > 0) {
+                let output = '<h3>Películas Guardadas:</h3>';
+                savedMovies.forEach(movie => {
+                    output += `<pre>{
+    title: "${movie.title}",
+    year: ${movie.year},
+    videoUrl: "${movie.videoUrl}",
+    active: false,
+    category: "${movie.category}"
+}</pre><hr>`;
+                });
+                document.getElementById('output').innerHTML = output;
+            }
+        });
+    </script>
+</body>
+</html>
